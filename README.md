@@ -323,8 +323,8 @@ class WebSearchMode(StrEnum):
 
 ```bash
 # Clone the repository
-git clone https://github.com/openai/codex.git
-cd codex/sdk/python
+git clone https://github.com/nogataka/codex-sdk-py.git
+cd codex-sdk-py
 
 # Install development dependencies
 pip install -e ".[dev]"
