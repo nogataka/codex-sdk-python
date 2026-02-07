@@ -9,11 +9,8 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import platform
-import sys
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -354,43 +351,13 @@ def _is_plain_object(value: Any) -> bool:
 
 
 def _find_codex_path() -> str:
-    """Find the Codex binary path for the current platform."""
-    system = platform.system().lower()
-    machine = platform.machine().lower()
+    """Find the Codex binary path.
 
-    target_triple: str | None = None
+    Unlike the TypeScript SDK which bundles the Codex binary in the npm package,
+    the Python SDK expects the Codex CLI to be installed separately and available
+    in the system PATH.
 
-    if system in ("linux", "android"):
-        if machine in ("x86_64", "amd64"):
-            target_triple = "x86_64-unknown-linux-musl"
-        elif machine in ("arm64", "aarch64"):
-            target_triple = "aarch64-unknown-linux-musl"
-
-    elif system == "darwin":
-        if machine in ("x86_64", "amd64"):
-            target_triple = "x86_64-apple-darwin"
-        elif machine in ("arm64", "aarch64"):
-            target_triple = "aarch64-apple-darwin"
-
-    elif system == "win32" or system == "windows":
-        if machine in ("x86_64", "amd64"):
-            target_triple = "x86_64-pc-windows-msvc"
-        elif machine in ("arm64", "aarch64"):
-            target_triple = "aarch64-pc-windows-msvc"
-
-    if not target_triple:
-        raise RuntimeError(f"Unsupported platform: {system} ({machine})")
-
-    # Try bundled binary first
-    script_dir = Path(__file__).parent
-    vendor_root = script_dir / "vendor"
-    arch_root = vendor_root / target_triple
-
-    binary_name = "codex.exe" if sys.platform == "win32" else "codex"
-    binary_path = arch_root / "codex" / binary_name
-
-    if binary_path.exists():
-        return str(binary_path)
-
-    # Fall back to PATH (for when binary is not bundled, e.g., PyPI install)
+    Returns:
+        The command name "codex" to be resolved via PATH.
+    """
     return "codex"
