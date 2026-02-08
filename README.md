@@ -4,6 +4,16 @@ Embed the Codex agent in your workflows and apps.
 
 This is a lightweight Python SDK that uses the system-installed `codex` command from PATH (no bundled binary).
 
+## Compatibility
+
+| Item | Version |
+|------|---------|
+| **Based on** | [@openai/codex-sdk](https://github.com/openai/codex/tree/main/sdk/typescript) @ commit `9327e99b2` |
+| **Codex CLI** | v0.98.0+ (requires `--json` flag support) |
+| **Python** | 3.10+ |
+
+This SDK is periodically synced with the upstream OpenAI Codex SDK. Check the [upstream sync workflow](.github/workflows/upstream-sync.yml) for update status.
+
 ## Related SDKs
 
 | Language | Package | Repository |

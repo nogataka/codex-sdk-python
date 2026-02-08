@@ -1,0 +1,114 @@
+name: Upstream Sync Check
+
+on:
+  schedule:
+    # Run every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-upstream:
+    name: Check for upstream changes
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch upstream SDK
+        run: |
+          git clone --depth 1 --sparse https://github.com/openai/codex.git upstream-codex
+          cd upstream-codex
+          git sparse-checkout set sdk/typescript
+
+      - name: Compare key files
+        id: compare
+        run: |
+          # Files to monitor for changes
+          FILES=(
+            "src/exec.ts"
+            "src/events.ts"
+            "src/items.ts"
+            "src/thread.ts"
+            "src/codex.ts"
+            "src/codexOptions.ts"
+            "src/threadOptions.ts"
+            "src/turnOptions.ts"
+          )
+
+          CHANGES=""
+          for file in "${FILES[@]}"; do
+            if [ -f "upstream-codex/sdk/typescript/$file" ]; then
+              # Get the hash of the upstream file
+              UPSTREAM_HASH=$(sha256sum "upstream-codex/sdk/typescript/$file" | cut -d' ' -f1)
+              echo "$file: $UPSTREAM_HASH"
+              CHANGES="$CHANGES\n- $file"
+            fi
+          done
+
+          # Get the latest commit info
+          cd upstream-codex
+          LATEST_COMMIT=$(git log -1 --format="%H %s" -- sdk/typescript)
+          echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
+
+          # Store the commit hash
+          COMMIT_HASH=$(git log -1 --format="%H" -- sdk/typescript)
+          echo "commit_hash=$COMMIT_HASH" >> $GITHUB_OUTPUT
+
+      - name: Check if update needed
+        id: check
+        run: |
+          # Current tracked commit (from README)
+          CURRENT_COMMIT="9327e99b2"
+          UPSTREAM_COMMIT="${{ steps.compare.outputs.commit_hash }}"
+
+          if [[ "$UPSTREAM_COMMIT" != *"$CURRENT_COMMIT"* ]]; then
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create issue if update needed
+        if: steps.check.outputs.needs_update == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🔄 Upstream Codex SDK has been updated';
+            const body = `## Upstream Changes Detected
+
+            The upstream [@openai/codex-sdk](https://github.com/openai/codex/tree/main/sdk/typescript) has been updated.
+
+            **Latest upstream commit:** \`${{ steps.compare.outputs.commit_hash }}\`
+            **Currently tracking:** \`9327e99b2\`
+
+            ### Action Required
+
+            1. Review the upstream changes: https://github.com/openai/codex/commits/main/sdk/typescript
+            2. Update this SDK if necessary
+            3. Update the compatibility section in README.md
+
+            ---
+            *This issue was automatically created by the upstream sync workflow.*
+            `;
+
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'upstream-sync'
+            });
+
+            const existingIssue = issues.data.find(issue => issue.title === title);
+
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['upstream-sync']
+              });
+            }
+
+      - name: Cleanup
+        run: rm -rf upstream-codex
