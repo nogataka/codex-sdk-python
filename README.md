@@ -23,16 +23,16 @@ This SDK is periodically synced with the upstream OpenAI Codex SDK. Check the [u
 
 Both SDKs have identical features and API design. Choose based on your preferred language.
 
-## TypeScript版との互換性
+## TypeScript SDK Compatibility
 
-このPython SDKは [TypeScript版 Codex SDK](https://github.com/nogataka/codex-sdk-ts) を1対1でポーティングしており、**全ての機能・データ構造・動作が同一**です。
+This Python SDK is a 1:1 port of the [TypeScript Codex SDK](https://github.com/nogataka/codex-sdk-ts), with **identical features, data structures, and behavior**.
 
-- 全8種のイベント型（ThreadStartedEvent, TurnCompletedEvent など）
-- 全8種のアイテム型（AgentMessageItem, CommandExecutionItem など）
-- 全4種のEnum（ApprovalMode, SandboxMode, ModelReasoningEffort, WebSearchMode）
-- CLI引数の構築ロジック、環境変数の処理、TOML設定シリアライズ
+- All 8 event types (ThreadStartedEvent, TurnCompletedEvent, etc.)
+- All 8 item types (AgentMessageItem, CommandExecutionItem, etc.)
+- All 4 enums (ApprovalMode, SandboxMode, ModelReasoningEffort, WebSearchMode)
+- CLI argument construction logic, environment variable handling, TOML config serialization
 
-詳細な比較は [docs/typescript-python-comparison.md](docs/typescript-python-comparison.md) を参照してください。
+For detailed comparison, see [docs/typescript-python-comparison.md](docs/typescript-python-comparison.md).
 
 ## Installation
 

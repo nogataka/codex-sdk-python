@@ -74,7 +74,7 @@ from .thread_options import (
 )
 from .turn_options import TurnOptions
 
-__version__ = "0.0.9"
+__version__ = "0.0.10"
 
 __all__ = [
     # Version
