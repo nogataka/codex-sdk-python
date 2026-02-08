@@ -2,11 +2,20 @@
 
 Embed the Codex agent in your workflows and apps.
 
-The Python SDK wraps the bundled `codex` binary. It spawns the CLI and exchanges JSONL events over stdin/stdout.
+This is a lightweight Python SDK that uses the system-installed `codex` command from PATH (no bundled binary).
+
+## Related SDKs
+
+| Language | Package | Repository |
+|----------|---------|------------|
+| **Python** | [`codex-sdk-py`](https://pypi.org/project/codex-sdk-py/) | [nogataka/codex-sdk-py](https://github.com/nogataka/codex-sdk-py) |
+| **TypeScript** | [`codex-sdk-ts`](https://www.npmjs.com/package/codex-sdk-ts) | [nogataka/codex-sdk-ts](https://github.com/nogataka/codex-sdk-ts) |
+
+Both SDKs have identical features and API design. Choose based on your preferred language.
 
 ## TypeScript版との互換性
 
-このPython SDKは [TypeScript版 Codex SDK](https://github.com/openai/codex/tree/main/sdk/typescript) を1対1でポーティングしており、**全ての機能・データ構造・動作が同一**です。
+このPython SDKは [TypeScript版 Codex SDK](https://github.com/nogataka/codex-sdk-ts) を1対1でポーティングしており、**全ての機能・データ構造・動作が同一**です。
 
 - 全8種のイベント型（ThreadStartedEvent, TurnCompletedEvent など）
 - 全8種のアイテム型（AgentMessageItem, CommandExecutionItem など）
@@ -228,6 +237,29 @@ codex = Codex({
 ```
 
 Thread options still take precedence for overlapping settings because they are emitted after these global overrides.
+
+### MCP Server Configuration
+
+Configure [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers to extend Codex's capabilities with external tools.
+
+```python
+codex = Codex({
+    "config": {
+        "mcp_servers": {
+            "playwright": {
+                "command": "npx",
+                "args": ["-y", "@playwright/mcp@latest"]
+            },
+            "filesystem": {
+                "command": "npx",
+                "args": ["-y", "@anthropic/mcp-server-filesystem@latest", "/path/to/dir"]
+            }
+        }
+    }
+})
+```
+
+The `mcp_servers` configuration is serialized as an inline TOML table, allowing you to dynamically configure MCP servers without modifying global Codex settings.
 
 ## API Reference
 

@@ -288,13 +288,19 @@ def _flatten_config_overrides(
         overrides.append(f"{prefix}={{}}")
         return
 
+    # Keys that should be serialized as inline TOML tables (not flattened)
+    inline_table_keys = {"mcp_servers"}
+
     for key, child in entries:
         if not key:
             raise ValueError("Codex config override keys must be non-empty strings")
         if child is None:
             continue
         path = f"{prefix}.{key}" if prefix else key
-        if _is_plain_object(child):
+        # mcp_servers and similar keys should be serialized as inline tables
+        if key in inline_table_keys and _is_plain_object(child):
+            overrides.append(f"{path}={_to_toml_value(child, path)}")
+        elif _is_plain_object(child):
             _flatten_config_overrides(child, path, overrides)
         else:
             overrides.append(f"{path}={_to_toml_value(child, path)}")
